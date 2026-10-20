@@ -1,0 +1,17 @@
+{
+  "name": "com.ttest.unity-utilities",
+  "version": "0.1.0",
+  "displayName": "TTest Unity Utilities",
+  "description": "Cross-project Unity extensions and GameObject pooling utilities.",
+  "unity": "6000.0",
+  "author": {
+    "name": "TTest"
+  },
+  "samples": [
+    {
+      "displayName": "Pooling Demo",
+      "description": "A small runtime exercise for spawning, returning, and resetting pooled cubes.",
+      "path": "Samples~/Pooling Demo"
+    }
+  ]
+}
