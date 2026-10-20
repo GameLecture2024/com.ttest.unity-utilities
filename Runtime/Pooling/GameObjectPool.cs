@@ -6,7 +6,7 @@ using UnityEngine.Pool;
 namespace TTest.UnityUtilities.Pooling
 {
     /// <summary>A pool for one prefab. It never relies on prefab names or resource-loading conventions.</summary>
-    public sealed class GameObjectPool : IDisposable
+    public class ObjectPool : IDisposable
     {
         private readonly GameObject _prefab;
         private readonly Transform _inactiveRoot;
@@ -14,11 +14,15 @@ namespace TTest.UnityUtilities.Pooling
         private readonly HashSet<int> _instanceIds = new();
         private bool _disposed;
 
-        public GameObjectPool(GameObject prefab, string poolName = null, Transform poolParent = null,
+        public ObjectPool(GameObject prefab, string poolName = null, Transform poolParent = null,
             int defaultCapacity = 8, int maxSize = 128)
         {
             if (prefab == null)
                 throw new ArgumentNullException(nameof(prefab));
+            if (defaultCapacity < 0)
+                throw new ArgumentOutOfRangeException(nameof(defaultCapacity));
+            if (maxSize < 1 || maxSize < defaultCapacity)
+                throw new ArgumentOutOfRangeException(nameof(maxSize), "Max size must be at least the default capacity.");
 
             _prefab = prefab;
             var root = new GameObject(poolName ?? $"{prefab.name} Pool");
@@ -27,7 +31,12 @@ namespace TTest.UnityUtilities.Pooling
             _pool = new ObjectPool<GameObject>(Create, OnGet, OnRelease, OnDestroy, true, defaultCapacity, maxSize);
         }
 
+        /// <summary>Number of instances currently available for reuse.</summary>
         public int CountInactive => _pool.CountInactive;
+        /// <summary>Total number of live instances created by this pool.</summary>
+        public int CountAll => _pool.CountAll;
+        /// <summary>Number of instances currently checked out from this pool.</summary>
+        public int CountActive => _pool.CountActive;
 
         public GameObject Spawn(Transform parent = null)
         {
@@ -36,6 +45,25 @@ namespace TTest.UnityUtilities.Pooling
             instance.transform.SetParent(parent, false);
             InvokeSpawned(instance);
             return instance;
+        }
+
+        /// <summary>Spawns an instance at a world-space pose.</summary>
+        public GameObject Spawn(Vector3 position, Quaternion rotation, Transform parent = null)
+        {
+            var instance = Spawn(parent);
+            instance.transform.SetPositionAndRotation(position, rotation);
+            return instance;
+        }
+
+        /// <summary>Spawns and returns a required component on the pooled instance.</summary>
+        public T Spawn<T>(Transform parent = null) where T : Component
+        {
+            var instance = Spawn(parent);
+            if (instance.TryGetComponent<T>(out var component))
+                return component;
+
+            Despawn(instance);
+            throw new InvalidOperationException($"Pooled prefab '{_prefab.name}' does not contain {typeof(T).Name}.");
         }
 
         public void Despawn(GameObject instance)
@@ -116,7 +144,20 @@ namespace TTest.UnityUtilities.Pooling
         private void ThrowIfDisposed()
         {
             if (_disposed)
-                throw new ObjectDisposedException(nameof(GameObjectPool));
+                throw new ObjectDisposedException(nameof(ObjectPool));
+        }
+    }
+
+    /// <summary>
+    /// Compatibility name for versions of this package before ObjectPool was introduced.
+    /// New code should use <see cref="ObjectPool"/>.
+    /// </summary>
+    public sealed class GameObjectPool : ObjectPool
+    {
+        public GameObjectPool(GameObject prefab, string poolName = null, Transform poolParent = null,
+            int defaultCapacity = 8, int maxSize = 128)
+            : base(prefab, poolName, poolParent, defaultCapacity, maxSize)
+        {
         }
     }
 }

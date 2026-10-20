@@ -1,6 +1,6 @@
 {
   "name": "com.ttest.unity-utilities",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "displayName": "TTest Unity Utilities",
   "description": "Cross-project Unity extensions and GameObject pooling utilities.",
   "unity": "6000.0",
@@ -10,7 +10,7 @@
   "samples": [
     {
       "displayName": "Pooling Demo",
-      "description": "A small runtime exercise for spawning, returning, and resetting pooled cubes.",
+      "description": "A 2D top-view scene where pooled square, triangle, and circle enemies chase the player.",
       "path": "Samples~/Pooling Demo"
     }
   ]
