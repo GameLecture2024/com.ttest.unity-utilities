@@ -1,6 +1,6 @@
 {
   "name": "com.ttest.unity-utilities",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "displayName": "TTest Unity Utilities",
   "description": "Cross-project Unity extensions and GameObject pooling utilities.",
   "unity": "6000.0",
